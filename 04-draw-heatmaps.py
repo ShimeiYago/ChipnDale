@@ -5,33 +5,49 @@ import os
 import matplotlib.pyplot as plt
 import cv2
 import glob
+import argparse
 
+DATASETS_DIR = 'datasets'
 
-INPUTDIR = 'workspace/03-grad-cam'
-CHIP_HEATMAPS_PATH = os.path.join(INPUTDIR, 'chip_heatmaps.npy')
-DALE_HEATMAPS_PATH = os.path.join(INPUTDIR, 'dale_heatmaps.npy')
-
-IMGDIR = 'datasets/test'
-CHIP_IMGS_DIR = os.path.join(IMGDIR, 'chip')
-DALE_IMGS_DIR = os.path.join(IMGDIR, 'dale')
-
-OUTDIR = 'workspace/04-heatmaps'
-OUTDIR_CHIP = os.path.join(OUTDIR, 'chip')
-OUTDIR_DALE = os.path.join(OUTDIR, 'dale')
-os.makedirs(OUTDIR_CHIP, exist_ok=True)
-os.makedirs(OUTDIR_DALE, exist_ok=True)
+WORKSPACE = 'workspace'
+INPUT_DIR = '03-grad-cam'
+TEST_A_HEATMAP = "testA_heatmap.npy"
+TEST_B_HEATMAP = "testB_heatmap.npy"
+OUTDIR_NAME = '04-heatmaps'
+TEST_A = 'testA'
+TEST_B = 'testB'
 
 INTENSITY = 0.9
 
 
 def main():
-    chip_heatmaps = np.load(CHIP_HEATMAPS_PATH)
-    joined_imgs = join_imgs_heatmaps(CHIP_IMGS_DIR, chip_heatmaps)
-    output_imgs(joined_imgs, OUTDIR_CHIP)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dataset_name', type=str, help='dataset name')
+    args = parser.parse_args()
 
-    dale_heatmaps = np.load(DALE_HEATMAPS_PATH)
-    joined_imgs = join_imgs_heatmaps(DALE_IMGS_DIR, dale_heatmaps)
-    output_imgs(joined_imgs, OUTDIR_DALE)
+    outdir = os.path.join(WORKSPACE, args.dataset_name, OUTDIR_NAME)
+    outdir_a = os.path.join(outdir, TEST_A)
+    outdir_b = os.path.join(outdir, TEST_B)
+    os.makedirs(outdir_a, exist_ok=True)
+    os.makedirs(outdir_b, exist_ok=True)
+
+    dataset_dir = os.path.join(DATASETS_DIR, args.dataset_name)
+    test_a_dir = os.path.join(dataset_dir, TEST_A)
+    test_b_dir = os.path.join(dataset_dir, TEST_B)
+
+    inputdir = os.path.join(WORKSPACE, args.dataset_name, INPUT_DIR)
+    test_a_heatmaps_path = os.path.join(inputdir, TEST_A_HEATMAP)
+    test_b_heatmaps_path = os.path.join(inputdir, TEST_B_HEATMAP)
+    test_a_heatmaps = np.load(test_a_heatmaps_path)
+    test_b_heatmaps = np.load(test_b_heatmaps_path)
+
+    # output testA
+    joined_imgs = join_imgs_heatmaps(test_a_dir, test_a_heatmaps)
+    output_imgs(joined_imgs, outdir_a)
+
+    # output testB
+    joined_imgs = join_imgs_heatmaps(test_b_dir, test_b_heatmaps)
+    output_imgs(joined_imgs, outdir_b)
 
 
 def join_imgs_heatmaps(imgdir, heatmaps):

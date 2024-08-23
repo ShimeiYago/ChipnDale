@@ -5,17 +5,15 @@ import os
 from utils.models import model1 as CNN
 from utils import load_images
 from utils import GradCam
+import argparse
 
-INPUTDIR = 'datasets/test'
-CHIPDIR = os.path.join(INPUTDIR, 'chip')
-DALEDIR = os.path.join(INPUTDIR, 'dale')
+DATASETS_DIR = 'datasets'
 
-OUTDIR = 'workspace/03-grad-cam'
-os.makedirs(OUTDIR, exist_ok=True)
-OUTPATH_CHIP = os.path.join(OUTDIR, 'chip_heatmaps.npy')
-OUTPATH_DALE = os.path.join(OUTDIR, 'dale_heatmaps.npy')
-
-MODEL_WEIGHT_PATH = 'workspace/01-classifier/weights.hdf5'
+WORKSPACE = 'workspace'
+INPUT_DIR = '01-classifier'
+OUTDIR_NAME = '03-grad-cam'
+TEST_A = 'testA'
+TEST_B = 'testB'
 
 IMGLEN = 150
 
@@ -23,27 +21,40 @@ LAST_CONV_LAYER_NAME = 'conv2d_2'
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dataset_name', type=str, help='dataset name')
+    args = parser.parse_args()
+
+    outdir = os.path.join(WORKSPACE, args.dataset_name, OUTDIR_NAME)
+    os.makedirs(outdir, exist_ok=True)
+
     # load images
-    chip_images = load_images(CHIPDIR, IMGLEN)
-    dale_images = load_images(DALEDIR, IMGLEN)
+    dataset_dir = os.path.join(DATASETS_DIR, args.dataset_name)
+    test_a_dir = os.path.join(dataset_dir, TEST_A)
+    test_b_dir = os.path.join(dataset_dir, TEST_B)
+    test_a_images = load_images(test_a_dir, IMGLEN)
+    test_b_images = load_images(test_b_dir, IMGLEN)
 
     # normalize
-    chip_images /= 255
-    dale_images /= 255
+    test_a_images /= 255
+    test_b_images /= 255
 
     # load model
+    model_weight_path = os.path.join(WORKSPACE, args.dataset_name, INPUT_DIR, 'weights.hdf5')
     model = CNN(IMGLEN)
-    model.load_weights(MODEL_WEIGHT_PATH)
+    model.load_weights(model_weight_path)
 
     # calculate grad heatmap
     grad_cam = GradCam(model, LAST_CONV_LAYER_NAME)
 
-    chip_heatmaps = grad_cam(chip_images)
-    dale_heatmaps = grad_cam(dale_images)
+    chip_heatmaps = grad_cam(test_a_images)
+    dale_heatmaps = grad_cam(test_b_images)
 
     # save
-    np.save(OUTPATH_CHIP, chip_heatmaps)
-    np.save(OUTPATH_DALE, dale_heatmaps)
+    outpath_a = os.path.join(outdir, f'{TEST_A}_heatmap.npy')
+    outpath_b = os.path.join(outdir, f'{TEST_B}_heatmap.npy')
+    np.save(outpath_a, chip_heatmaps)
+    np.save(outpath_b, dale_heatmaps)
 
 
 if __name__ == '__main__':
