@@ -4,7 +4,7 @@ Classify images with CNN.
 
 ## Requirement
 
-- python 3.7
+- python 3.9.19
 
 ## Install
 

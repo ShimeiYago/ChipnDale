@@ -1,7 +1,9 @@
 import numpy as np
 import glob
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from PIL import ImageFile
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def load_images(dirpath, imglen):
     imglist = []
