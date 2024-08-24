@@ -2,7 +2,7 @@
 
 import numpy as np
 import os
-from utils.models import model1 as CNN
+from utils.models import CNN
 from utils import load_images
 from utils import GradCam
 import argparse
@@ -16,9 +16,6 @@ TEST_A = 'testA'
 TEST_B = 'testB'
 
 IMGLEN = 150
-
-LAST_CONV_LAYER_NAME = 'conv2d_2'
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -45,7 +42,7 @@ def main():
     model.load_weights(model_weight_path)
 
     # calculate grad heatmap
-    grad_cam = GradCam(model, LAST_CONV_LAYER_NAME)
+    grad_cam = GradCam(model)
 
     chip_heatmaps = grad_cam(test_a_images)
     dale_heatmaps = grad_cam(test_b_images)

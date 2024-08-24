@@ -7,7 +7,7 @@ import math
 
 from tensorflow.keras.preprocessing.image import array_to_img
 from utils import load_images
-from utils.models import model1 as CNN
+from utils.models import CNN
 
 
 DATASETS_DIR = 'datasets'

@@ -5,7 +5,7 @@ import csv
 import argparse
 from tensorflow.keras.callbacks import EarlyStopping
 import os
-from utils.models import model1 as CNN
+from utils.models import CNN
 from utils import load_images
 
 
