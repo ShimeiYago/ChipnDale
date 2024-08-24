@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
-import pandas as pd
+import csv
 import argparse
 from tensorflow.keras.callbacks import EarlyStopping
 import os
@@ -53,9 +53,7 @@ def main():
                         callbacks=[early_stop])
 
     # save history
-    histdf = pd.DataFrame(history.history)
-    with open(os.path.join(outdir, 'history.csv'), 'w') as f:
-        histdf.to_csv(f)
+    save_history(history, os.path.join(outdir, 'history.csv'))
 
     # save model wights
     model.save_weights(os.path.join(outdir, 'weights.hdf5'))
@@ -96,6 +94,18 @@ def prepare_dataset(dataset_dir, imglen, is_full, test_size=0.2):
     x_test /= 255
 
     return x_train, x_test, y_train, y_test
+
+
+def save_history(history, file_path):
+    with open(file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        
+        header = ['epoch'] + list(history.history.keys())
+        writer.writerow(header)
+        
+        for epoch in range(len(history.history['loss'])):
+            row = [epoch + 1] + [history.history[key][epoch] for key in history.history.keys()]
+            writer.writerow(row)
 
 
 if __name__ == '__main__':
