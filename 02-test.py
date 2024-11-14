@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import argparse
 import math
+import csv
 
 from tensorflow.keras.preprocessing.image import array_to_img
 from utils import load_images
@@ -35,8 +36,8 @@ def main():
     test_a_dir = os.path.join(dataset_dir, TEST_A)
     test_b_dir = os.path.join(dataset_dir, TEST_B)
     
-    test_a_images = load_images(test_a_dir, IMGLEN)
-    test_b_images = load_images(test_b_dir, IMGLEN)
+    test_a_images, test_a_names = load_images(test_a_dir, IMGLEN)
+    test_b_images, test_b_names = load_images(test_b_dir, IMGLEN)
 
     # normalize
     test_a_images /= 255
@@ -48,30 +49,43 @@ def main():
     model.load_weights(model_weight_path)
 
     # predict A
-    outpath_a = os.path.join(outdir, f'{TEST_A}.png')
-    test_pred(model, test_a_images, outpath_a, 'A')
+    test_pred(model, test_a_images, test_a_names, outdir, TEST_A, 'A')
 
     # predict B
-    outpath_b = os.path.join(outdir, f'{TEST_B}.png')
-    test_pred(model, test_b_images, outpath_b, 'B')
+    test_pred(model, test_b_images, test_b_names, outdir, TEST_B, 'B')
 
 
-def test_pred(model, images, outpath, mode):
+def test_pred(model, images, file_names, outdir, out_file_name, mode):
     preds = model.predict(images)
-
-    n_rows = math.ceil(len(preds) / N_PLT_COLUMNS)
+        
+    if mode=="A": dataset_index = 0
+    else: dataset_index = 1
     
+    # output result csv
+    header = ["file", "probability"]
+    results = [[file_names[i], preds[i][dataset_index]] for i in range(len(preds))]
+    csv_outpath = os.path.join(outdir, f'results-{out_file_name}.csv')
+    with open(csv_outpath, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        writer.writerows(results)
+        
+    # output image
+    img_outpath = os.path.join(outdir, f'failed-{out_file_name}.png')
+    failed_index_list = [i for i, pred in enumerate(preds) if pred[dataset_index] <= 0.5]        
+    n_rows = math.ceil(len(failed_index_list) / N_PLT_COLUMNS)
     plt.figure(figsize=(3*N_PLT_COLUMNS, 4*n_rows))
-    for i, pred in enumerate(preds):
+    for i, failed_index in enumerate(failed_index_list):
+        pred = preds[failed_index]
         plt.subplot(n_rows, N_PLT_COLUMNS, i+1)
-        if(pred[0]>pred[1] and mode=='A' or pred[0]<pred[1] and mode=='B'):
-            ox = 'o'
-        else:
-            ox = 'x'
-        plt.title(f'{ox} ({pred[0]:.2f})')
-        plt.imshow(array_to_img(images[i]))
+        plt.title(f'{pred[dataset_index]:.2f}')
+        plt.imshow(array_to_img(images[failed_index]))
 
-        plt.savefig(outpath)
+        plt.savefig(img_outpath)
+
+    if (len(failed_index_list) == 0):
+        print(f"No failed for {out_file_name}")
+        
 
 
 if __name__ == '__main__':

@@ -63,8 +63,8 @@ def prepare_dataset(dataset_dir, imglen, is_full, test_size=0.2):
     # load
     train_a_dir = os.path.join(dataset_dir, TRAIN_A)
     train_b_dir = os.path.join(dataset_dir, TRAIN_B)
-    train_a_images = load_images(train_a_dir, imglen)
-    train_b_images = load_images(train_b_dir, imglen)
+    train_a_images, _ = load_images(train_a_dir, imglen)
+    train_b_images, _ = load_images(train_b_dir, imglen)
     
     if is_full:
         N_train = train_a_images.shape[0]
@@ -74,8 +74,8 @@ def prepare_dataset(dataset_dir, imglen, is_full, test_size=0.2):
         
         test_a_dir = os.path.join(dataset_dir, TEST_A)
         test_b_dir = os.path.join(dataset_dir, TEST_B)
-        test_a_images = load_images(test_a_dir, imglen)
-        test_b_images = load_images(test_b_dir, imglen)
+        test_a_images, _ = load_images(test_a_dir, imglen)
+        test_b_images, _ = load_images(test_b_dir, imglen)
                 
         x_test = np.append(test_a_images, test_b_images, axis=0)
         y_test = np.array([0]*test_a_images.shape[0] + [1]*test_b_images.shape[0])

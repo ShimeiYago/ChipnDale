@@ -29,8 +29,8 @@ def main():
     dataset_dir = os.path.join(DATASETS_DIR, args.dataset_name)
     test_a_dir = os.path.join(dataset_dir, TEST_A)
     test_b_dir = os.path.join(dataset_dir, TEST_B)
-    test_a_images = load_images(test_a_dir, IMGLEN)
-    test_b_images = load_images(test_b_dir, IMGLEN)
+    test_a_images, _ = load_images(test_a_dir, IMGLEN)
+    test_b_images, _ = load_images(test_b_dir, IMGLEN)
 
     # normalize
     test_a_images /= 255
